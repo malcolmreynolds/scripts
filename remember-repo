@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import os,sys
+from subprocess import *
+from warnings import *
+
+storage_file = "~/.my-git-repos"
+
+def run_shell_cmd(command):
+    """Uses subprocess module to run <command> on the command line
+    and return the output generated"""
+    #print "command=", command
+    p = Popen(command, shell=True,stdout=PIPE)
+    output = p.stdout.readlines();
+    return output
+
+def main(repo_path):
+    """Adds a repository to my list, stored in $storage_file"""
+    #print 'main(' + repo_path + ')'
+    repo_path = os.path.abspath(repo_path)
+    #first check if it's already there
+    cmd = 'grep ' + repo_path + ' ' + storage_file
+    #print cmd
+    ret = run_shell_cmd(cmd)
+    if len(ret) > 0 and repo_path == ret[0][:-1]:
+        warn(repo_path + " is already in " + storage_file)
+        sys.exit(1)
+
+    #if we are here then the exact repository we want isn't in the file,
+    #so concatenate it onto the end
+    cmd = 'echo ' + repo_path + ' >> ' + storage_file
+    #print cmd
+    run_shell_cmd(cmd)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1])
+    

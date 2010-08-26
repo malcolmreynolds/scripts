@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+ 
+# possible archs: i386 ppc x86_64 ppc64
+# note: ppc64 doesn't work in Snow Leopard
+ARCHITECTURES="i386 ppc x86_64"
+ 
+# number of cpus to use during compile
+COMPILETHREADS=2
+ 
+COMPILER=gcc-4.2
+#COMPILER=/Developer/usr/bin/llvm-g++-4.2
+ 
+# configure flags
+CONFFLAGS="--disable-shared"
+ 
+# compiler flags
+COMPFLAGS="-O3"
+ 
+# find the name of the source file
+SOURCEFILE=`find . -name "gsl*.tar.gz" -depth 1`
+SOURCEFILE=${SOURCEFILE:2:100}
+GSLVER=${SOURCEFILE%.tar.gz}
+ 
+# unzip the main source file
+tar -xzf $SOURCEFILE
+ 
+for ARCH in $ARCHITECTURES
+do
+echo Compiling for ${ARCH}...
+ 
+# copy source to new directory
+cp -r ${GSLVER} ${GSLVER}_$ARCH
+cd ${GSLVER}_$ARCH
+ 
+# configure for architecture
+if [ "$ARCH" != "ppc64" ] ; then  # not sure why we have to do cross compile for ppc64 but not ppc...
+env CC="$COMPILER" CFLAGS="-arch $ARCH $COMPFLAGS" LDFLAGS="-arch $ARCH" ./configure $CONFFLAGS --build=$ARCH
+else
+env CC="$COMPILER" CFLAGS="-arch $ARCH $COMPFLAGS" LDFLAGS="-arch $ARCH" ./configure $CONFFLAGS --host=$ARCH
+fi
+ 
+# compile for architecture
+make clean ; nice make -j $COMPILETHREADS
+ 
+cd ..
+ 
+done
+ 
+mkdir include
+mkdir libs
+cp `find ${GSLVER} -name "*.h"` include
+ 
+echo
+echo
+echo Making Universal Binaries...
+ 
+find ${GSLVER}_$ARCH -name "*.a"
+ 
+for LIBRARY in `find ${GSLVER}_$ARCH -name "*.a"`
+do
+echo
+LIB=`basename $LIBRARY`
+echo Library: $LIB
+find . -name $LIB
+lipo -create `find . -name $LIB | xargs` -output libs/$LIB
+lipo -info libs/$LIB
+done
+ 
+echo
+echo Universal Binaries:
+echo
+lipo -info libs/*.a

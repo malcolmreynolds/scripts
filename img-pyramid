@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+
+import os,sys
+from subprocess import *
+
+#Anything smaller than this is probably not worth generating
+MIN_SIZE = 16
+
+def printusage():
+    print "Usage: img-pyramid num-levels img-file"
+
+def parse_com_line():
+    """Parses first arg to an integer as that is how many
+    levels we are doing, returns second unmodified as a string."""
+    return (int(sys.argv[1]),sys.argv[2])
+
+def run_shell_cmd(command):
+    """Uses subprocess module to run <command> on the command line
+    and return the output generated"""
+    #print "command=", command
+    p = Popen(command, shell=True,stdout=PIPE)
+    output = p.stdout.readlines();
+    return output
+
+def get_img_dims(img):
+    """Gets the dimension of an image using imagemagick"""
+    cmd = "identify " + img + " | awk '{print $3}'"
+    lines = run_shell_cmd(cmd)
+    s = lines[0].split('x')
+    return (int(s[0]),int(s[1][:-1]))
+
+def pyramid_sizes(w,h,levels):
+    """For a given width and height, returns a list of (w,h)
+    tuples which are all the sizes that we will regenerate the picture at."""
+    retvals = [(w,h)]
+    for i in range(levels):
+        w = w / 2
+        h = h / 2
+        #check we are still at a sensible size
+        if w < MIN_SIZE or h < MIN_SIZE:
+            break
+        retvals.append((w,h))
+        
+    return retvals
+
+def gen_image(img_file,w,h,id):
+    """Converts an image to the size given, writes it out"""
+    dot_loc = img_file.rfind('.')
+    fname = img_file[:dot_loc]
+    fext = img_file[dot_loc:]
+    new_name = fname + "." + str(id) + \
+               "."+str(w)+"x"+str(h)+fext
+
+    cmd = "convert " + img_file + " -resize " + \
+           str(w) + "x" + str(h) + " " + new_name
+    print cmd
+    run_shell_cmd(cmd)
+
+def main():
+    (levels,img_file) = parse_com_line()
+    (w,h) = get_img_dims(img_file)
+    newsizes = pyramid_sizes(w,h,levels)
+
+    i = 0;
+    for (new_w,new_h) in newsizes:
+        gen_image(img_file,new_w,new_h,i)
+        i = i + 1
+
+if __name__ == "__main__":
+    main()
+

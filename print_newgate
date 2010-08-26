@@ -1,0 +1,4 @@
+#!/bin/bash
+scp $1 reynolds@newgate:~/printing/$1
+ssh reynolds@newgate "lpr -P cps405 ~/printing/$1"
+ssh reynolds@newgate "rm ~/printing/$1"

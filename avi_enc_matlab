@@ -1,0 +1,3 @@
+#!/bin/bash
+#mencoder -o $2 -ovc lavc -nosound -lavcopts vcodec=msmpeg4:vbitrate=5000:vhq -ofps 30 $1
+ffmpeg -i $1 -vcodec bmp $2

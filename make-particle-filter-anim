@@ -1,0 +1,9 @@
+
+#!/bin/bash
+convert -delay 100 \
+  `ls scale-4-iter-*-all.png` \
+  `ls scale-3-iter-*-all.png` \
+  `ls scale-2-iter-*-all.png` \
+  `ls scale-1-iter-*-all.png` \
+  `ls scale-0-iter-*-all.png` \
+  -loop 0 anim.gif

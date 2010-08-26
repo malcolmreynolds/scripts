@@ -1,0 +1,2 @@
+#!/bin/bash
+mount -t smbfs //reynolds@smbhelp.cs.ucl.ac.uk/reynolds /Volumes

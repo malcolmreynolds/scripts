@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+import os
+import sys
+import random
+
+print sys.argv
+
+if len(sys.argv) != 2:
+    print "Must provide filename on command line"
+
+file_loc = sys.argv[1]
+print "Getting ", file_loc
+
+tmp_filename = "temporary_file." + str(random.randint(0, 1000000))
+wget_command = "wget -O " + tmp_filename + " " + file_loc 
+os.system("ssh reynolds@newgate '" + wget_command + "'")
+os.system("scp reynolds@newgate:~/" + tmp_filename + " .")
+os.system("ssh reynolds@newgate 'rm " + tmp_filename + "'")
+
+print "file saved, available as ", tmp_filename
+
+
