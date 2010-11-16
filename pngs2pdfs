@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import os, sys
+
+files = os.listdir('.');
+
+for f in files:
+    if f[-4:] == '.png':
+        fileRoot = f[:-4]
+        cmd = 'convert ' + f + ' ' + fileRoot + '.pdf'
+        os.system(cmd)
+        #print cmd
+
